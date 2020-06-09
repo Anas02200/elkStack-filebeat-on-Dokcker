@@ -1,0 +1,53 @@
+filebeat.registry.path: /usr/share/filebeat/data/registry
+
+filebeat.config:
+  inputs:
+    path: ${path.config}/prospectors.d/*.yml
+    reload.enabled: false
+  modules:
+    enabled: true
+    path: ${path.config}/modules.d/*.yml
+
+
+filebeat.modules:
+
+
+
+- module: kafka
+  log:
+    enabled: true
+    var.paths:
+      - "/logs/kafka/controller.log*"
+      - "/logs/kafka/server.log*"
+      - "/logs/kafka/state-change.log*"
+      - "/logs/kafka/kafka-*.log*"
+
+
+- module: rabbitmq
+  log:
+    enabled: true
+    var.paths: ["/logs/rabbitmq/*.log*","/logs/rabbitmq/log/*.log*"]
+
+- module: postgresql
+  log:
+    enabled: true
+    var.paths: ["/logs/postgres/*.log*"]
+
+processors:
+  - add_cloud_metadata:
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  username: elastic
+  # Read PW from filebeat.keystore
+  password: changeme
+
+setup.kibana:
+  host: "kibana:5601"
+  username: elastic
+  password: changeme
+  dashboards.enabled: true
+
+xpack.monitoring.enabled: true
+
+
